@@ -1,16 +1,55 @@
-using Revise, MimiFAIR, MimiPAGE2020, Mimi, DataFrames
+# --------------------------------------------------
+# explore PAGEFAIR outputs and compare to PAGE2020
+# --------------------------------------------------
 
-# include("../src/main_model_annual.jl")
-# include("analysis/allscc/main_model_annual.jl") # run page on annual timestep
+using Revise, MimiFAIR, MimiPAGE2020, Mimi, DataFrames, Plots
 
-## load PAGE model
+## load PAGE2020 original model (baseline and marginal)
 PAGE_m = MimiPAGE2020.get_model()
 # m = getpage()
 run(PAGE_m)
 PAGE_mm = MimiPAGE2020.get_marginal_model(PAGE_m, year = 2030)
 run(PAGE_mm)
 
-## explore baseline outputs
+## load PAGEFAIR -- run FAIR_compute_scc.jl script but change pulse size to 75000 Mt?
+PAGEFAIR_m = m
+PAGEFAIR_mm = mm
+# FAIR_m
+# FAIR_mm
+
+## explore outputs
+
+# scc
+eta = 0.0
+prtp = 0.03
+page_scc = MimiPAGE2020.compute_scc(PAGE_m, year = 2030, prtp = prtp, eta = eta)
+pagefair_scc = PAGEFAIR_mm[:EquityWeighting, :td_totaldiscountedimpacts] / MimiPAGE2020.undiscount_scc(mm.base, pulse_year) * 1e6 / 1e9 # millions to dollars, Gt to t
+
+# temperature
+
+# temperature delta
+
+# CO2 emissions
+
+# change in CO2 emissions
+
+# CO2 concentration
+
+# change in CO2 concentration
+
+# radiative forcing
+
+# change in radiative forcing
+
+
+
+
+
+
+
+###### OLD
+
+## explore outputs
 
 # prtp and eta
 PAGE_m[:EquityWeighting, :emuc_utilityconvexity] # eta = 1.66666....

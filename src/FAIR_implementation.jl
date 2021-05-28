@@ -1,5 +1,7 @@
 using Revise, MimiFAIR, MimiPAGE2020, Mimi, DataFrames
 
+## FIRST PASS OF FAIR IMPLEMENTATION (DO NOT USE FOR SCC -- see FAIR_compute_scc)
+
 ## load MimiPAGE2020
 m = MimiPAGE2020.get_model()
 run(m)
