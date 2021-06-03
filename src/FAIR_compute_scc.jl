@@ -38,7 +38,7 @@ using Revise, MimiFAIR, MimiPAGE2020, Mimi, DataFrames
 # run(PAGE2020_mm)
 
 # PAGE2020_mm[:EquityWeighting, :td_totaldiscountedimpacts] / MimiPAGE2020.undiscount_scc(PAGE2020_mm.base, 2030)
-# MimiPAGE2020.compute_scc(PAGE2020, year = 2030, pulse_size = 7500., prtp = 0.03, eta = 0.)
+# MimiPAGE2020.compute_scc(PAGE2020, year = 2030, pulse_size = 75000., prtp = 0.03, eta = 0.)
 
 # # results are approximately equal
 
@@ -134,8 +134,8 @@ for usg in usg_scenario
         ## set FAIR pulse size
         # FAIR_pulse_size = (pulse_size * 1/1000 * 12/44) / MimiPAGE2020.getperiodlength(pulse_year)  # MtCO2 to GtC
         # FAIR_pulse_size = (pulse_size * 1/1000 * 12/44)  # MtCO2 to GtC
-        FAIR_pulse_size = 1.0 * 12/44 # GtC to GtCO2 
-        # FAIR_pulse_size = 1/1000 * 12/44 # GtC to MtCO2 
+        # FAIR_pulse_size = 1.0 * 12/44 # GtC to GtCO2 
+        FAIR_pulse_size = 1/1000 * 12/44 # GtC to MtCO2 
 
         ## perturb FAIR CO2 emissions
         new_emissions = FAIR_mm[:co2_cycle, :E_CO₂]
@@ -160,8 +160,8 @@ for usg in usg_scenario
         # calculate SCC and print result
         # --------------------------------------------------
 
-        scc = mm[:EquityWeighting, :td_totaldiscountedimpacts] / MimiPAGE2020.undiscount_scc(mm.base, pulse_year) * 1e6 / 1e9 # millions to dollars, Gt to t
-        # scc = mm[:EquityWeighting, :td_totaldiscountedimpacts] / MimiPAGE2020.undiscount_scc(mm.base, pulse_year) # if pulse is already in Mt
+        # scc = mm[:EquityWeighting, :td_totaldiscountedimpacts] / MimiPAGE2020.undiscount_scc(mm.base, pulse_year) * 1e6 / 1e9 # millions to dollars, Gt to t (for 1 Gt FAIR pulse)
+        scc = mm[:EquityWeighting, :td_totaldiscountedimpacts] / MimiPAGE2020.undiscount_scc(mm.base, pulse_year) # for 1 Mt FAIR pulse
         println(scc)
 
     end

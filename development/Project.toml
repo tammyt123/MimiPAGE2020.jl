@@ -1,7 +1,8 @@
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Mimi = "e4e893b0-ee5e-52ea-8111-44b3bdec128c"
+MimiDICE2016 = "ab869bb0-c23d-11e9-310e-47ac58ee0562"
 MimiFAIR = "73d86c50-c5fa-11e9-3497-c3dc913e627a"
-MimiIWG = "b1d80750-afbf-11e9-0666-4f25b2ea2b65"
+MimiFUND = "b3ba11de-429f-11e9-29f7-cb478ab96e7c"
 MimiPAGE2020 = "daa1807e-96ac-4669-bc57-6ed081383131"
 Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
