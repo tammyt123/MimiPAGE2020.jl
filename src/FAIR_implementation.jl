@@ -1,5 +1,17 @@
-## function to get baseline PAGEFAIR model (i.e. input temperature vector from FAIR-NCEE into baseline PAGE2020)
-function get_pagefair(;usg_scenario::String, prtp::Float64 = nothing, eta::Float64 = nothing)
+#######################################################################################################################
+# LOAD BASELINE PAGEFAIR MODEL
+########################################################################################################################
+# Description: Return PAGE2020 model with temperature vector set to baseline FAIR model. Note: in order to run this, FAIR-NCEE must
+#              be loaded in the environment.
+#
+# Function Arguments:
+#
+#       rcp_scenario:     RCP scenario ("RCP26", "RCP45", "RCP60" or "RCP85")
+#       prtp:             Pure rate of time preference, for calculating discount rate.
+#       eta:              Eta parameter, for calculating discount rate.
+#----------------------------------------------------------------------------------------------------------------------
+
+function get_pagefair(;rcp_scenario::String="RCP85", prtp::Float64 = nothing, eta::Float64 = nothing)
     
     ## load baseline PAGE model
     m = MimiPAGE2020.get_model()
@@ -23,7 +35,7 @@ function get_pagefair(;usg_scenario::String, prtp::Float64 = nothing, eta::Float
     run(m)
 
     ## load baseline FAIR-NCEE
-    FAIR = MimiFAIR.get_model(usg_scenario = usg_scenario)
+    FAIR = MimiFAIR.get_model(rcp_scenario = rcp_scenario)
     run(FAIR)
 
     fair_years = collect(1765:1:2300)
@@ -42,18 +54,32 @@ function get_pagefair(;usg_scenario::String, prtp::Float64 = nothing, eta::Float
 
 end
 
-## function to get marginal DICE-FAIR model (i.e. input perturbed FAIR temperature vector into DICE2016)
-## note: FAIR-NCEE must be loaded in environment first!!
-function get_pagefair_marginal_model(;usg_scenario::String, pulse_year::Int, prtp::Float64 = nothing, eta::Float64 = nothing, gas::Symbol=:CO2, pulse_size::Float64=1.0)
+#######################################################################################################################
+# GET MARGINAL PAGEFAIR MODEL
+########################################################################################################################
+# Description: Return marginal (perturbed) PAGE2020 model with temperature vector set to perturbed FAIR model. 
+#              Note: in order to run this, FAIR-NCEE must be loaded in the environment.
+#
+# Function Arguments:
+#
+#       rcp_scenario:     RCP scenario ("RCP26", "RCP45", "RCP60" or "RCP85")
+#       prtp:             Pure rate of time preference, for calculating discount rate.
+#       eta:              Eta parameter, for calculating discount rate.
+#       gas:              Gas to perturb (:CO2, :CH4, or :N2O).
+#       pulse_year:       Pulse year (for SC-GHG calculation).
+#       pulse_size:       Pulse size (defaults to 1.0).
+#----------------------------------------------------------------------------------------------------------------------
+
+function get_pagefair_marginal_model(;rcp_scenario::String="RCP85", pulse_year::Int, prtp::Float64 = nothing, eta::Float64 = nothing, gas::Symbol=:CO2, pulse_size::Float64=1.0)
     
     ## create PAGE2020 marginal model
-    m = MimiPAGE2020.get_pagefair(usg_scenario = usg_scenario, prtp = prtp, eta = eta)
-    mm = Mimi.create_marginal_model(m, (pulse_size * 1e9))
+    m = MimiPAGE2020.get_pagefair(rcp_scenario = rcp_scenario, prtp = prtp, eta = eta)
+    mm = Mimi.create_marginal_model(m, (pulse_size * 1e9)) # multiply by 1e9 since FAIR units are Gt
     run(mm)
 
     ## get perturbed FAIR temperature vector
     fair_years = collect(1765:1:2300)
-    new_temperature = MimiFAIR.get_perturbed_fair_temperature(usg_scenario = usg_scenario, pulse_year = pulse_year, pulse_size = pulse_size, gas = gas)
+    new_temperature = MimiFAIR.get_perturbed_fair_temperature(rcp_scenario = rcp_scenario, pulse_year = pulse_year, pulse_size = pulse_size, gas = gas)
     new_temperature_df = DataFrame(year = fair_years, T = new_temperature)
 
     ## input perturbed FAIR temperature into marginal PAGE model
@@ -70,9 +96,24 @@ function get_pagefair_marginal_model(;usg_scenario::String, pulse_year::Int, prt
 
 end
 
-## compute SCC from PAGEFAIR
-function compute_scc_pagefair(;usg_scenario::String, pulse_year::Int, prtp::Float64, eta::Float64, pulse_size::Float64=1.0, gas::Symbol=:CO2)
-    mm = MimiPAGE2020.get_pagefair_marginal_model(usg_scenario = usg_scenario, pulse_year = pulse_year, prtp = prtp, eta = eta, gas = gas, pulse_size = pulse_size)
+
+#######################################################################################################################
+# COMPUTE SC-GHG
+########################################################################################################################
+# Description: Compute SC-GHGs. Note: in order to run this, FAIR-NCEE must be loaded in the environment.
+#
+# Function Arguments:
+#
+#       rcp_scenario:     RCP scenario ("RCP26", "RCP45", "RCP60" or "RCP85")
+#       prtp:             Pure rate of time preference, for calculating discount rate.
+#       eta:              Eta parameter, for calculating discount rate.
+#       gas:              Gas to perturb (:CO2, :CH4, or :N2O).
+#       pulse_year:       Pulse year (for SC-GHG calculation).
+#       pulse_size:       Pulse size (defaults to 1.0).
+#----------------------------------------------------------------------------------------------------------------------
+
+function compute_scghg_pagefair(;rcp_scenario::String="RCP85", pulse_year::Int, prtp::Float64, eta::Float64, pulse_size::Float64=1.0, gas::Symbol=:CO2)
+    mm = MimiPAGE2020.get_pagefair_marginal_model(rcp_scenario = rcp_scenario, pulse_year = pulse_year, prtp = prtp, eta = eta, gas = gas, pulse_size = pulse_size)
     scc = mm[:EquityWeighting, :td_totaldiscountedimpacts] / MimiPAGE2020.undiscount_scc(mm.base, pulse_year) * 1e6 # for 1 Gt FAIR pulse, since SCC is in millions
     return(scc)
 end
