@@ -44,16 +44,16 @@ end
 
 ## function to get marginal DICE-FAIR model (i.e. input perturbed FAIR temperature vector into DICE2016)
 ## note: FAIR-NCEE must be loaded in environment first!!
-function get_pagefair_marginal_model(;usg_scenario::String, pulse_year::Int, prtp::Float64 = nothing, eta::Float64 = nothing)
+function get_pagefair_marginal_model(;usg_scenario::String, pulse_year::Int, prtp::Float64 = nothing, eta::Float64 = nothing, gas::Symbol=:CO2, pulse_size::Float64=1.0)
     
     ## create PAGE2020 marginal model
     m = MimiPAGE2020.get_pagefair(usg_scenario = usg_scenario, prtp = prtp, eta = eta)
-    mm = Mimi.create_marginal_model(m, 1e9)
+    mm = Mimi.create_marginal_model(m, (pulse_size * 1e9))
     run(mm)
 
     ## get perturbed FAIR temperature vector
     fair_years = collect(1765:1:2300)
-    new_temperature = MimiFAIR.get_perturbed_fair_temperature(usg_scenario = usg_scenario, pulse_year = pulse_year)
+    new_temperature = MimiFAIR.get_perturbed_fair_temperature(usg_scenario = usg_scenario, pulse_year = pulse_year, pulse_size = pulse_size, gas = gas)
     new_temperature_df = DataFrame(year = fair_years, T = new_temperature)
 
     ## input perturbed FAIR temperature into marginal PAGE model
@@ -71,8 +71,8 @@ function get_pagefair_marginal_model(;usg_scenario::String, pulse_year::Int, prt
 end
 
 ## compute SCC from PAGEFAIR
-function compute_scc_pagefair(;usg_scenario::String, pulse_year::Int, prtp::Float64, eta::Float64)
-    mm = MimiPAGE2020.get_pagefair_marginal_model(usg_scenario = usg_scenario, pulse_year = pulse_year, prtp = prtp, eta = eta)
+function compute_scc_pagefair(;usg_scenario::String, pulse_year::Int, prtp::Float64, eta::Float64, pulse_size::Float64=1.0, gas::Symbol=:CO2)
+    mm = MimiPAGE2020.get_pagefair_marginal_model(usg_scenario = usg_scenario, pulse_year = pulse_year, prtp = prtp, eta = eta, gas = gas, pulse_size = pulse_size)
     scc = mm[:EquityWeighting, :td_totaldiscountedimpacts] / MimiPAGE2020.undiscount_scc(mm.base, pulse_year) * 1e6 # for 1 Gt FAIR pulse, since SCC is in millions
     return(scc)
 end

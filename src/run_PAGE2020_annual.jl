@@ -3,7 +3,7 @@ using Mimi
 include("analysis/allscc/main_model_annual.jl")
 
 m = getpage()
-run(m)s
+run(m)
 explore(m)
 
 
