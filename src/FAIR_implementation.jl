@@ -114,6 +114,6 @@ end
 
 function compute_scghg_pagefair(;rcp_scenario::String="RCP85", pulse_year::Int, prtp::Float64, eta::Float64, pulse_size::Float64=1.0, gas::Symbol=:CO2)
     mm = MimiPAGE2020.get_pagefair_marginal_model(rcp_scenario = rcp_scenario, pulse_year = pulse_year, prtp = prtp, eta = eta, gas = gas, pulse_size = pulse_size)
-    scc = mm[:EquityWeighting, :td_totaldiscountedimpacts] / MimiPAGE2020.undiscount_scc(mm.base, pulse_year) * 1e6 # for 1 Gt FAIR pulse, since SCC is in millions
-    return(scc)
+    scghg = mm[:EquityWeighting, :td_totaldiscountedimpacts] / MimiPAGE2020.undiscount_scc(mm.base, pulse_year) * 1e6 # for 1 Gt FAIR pulse, since SCC is in millions
+    return(scghg)
 end
