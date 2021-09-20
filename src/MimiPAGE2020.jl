@@ -16,7 +16,6 @@ include("utils/mctools.jl")
 
 include("models/mcs_def.jl")
 include("compute_scc.jl")
-include("FAIR_implementation.jl")
 
 include("components/RCPSSPScenario.jl")
 include("components/CO2emissions.jl")
