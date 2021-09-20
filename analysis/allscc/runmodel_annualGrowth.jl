@@ -31,8 +31,13 @@ set_globalbools()
 
 include("main_model_annualGrowth.jl")
 
+scenarios = ["RCP1.9 & SSP1", "RCP2.6 & SSP1", "RCP4.5 & SSP2", "RCP8.5 & SSP5"]
+if length(ARGS) > 0
+    scenarios = [scenarios[parse(Int64, ARGS[1])]]
+end
+
 # define the output directory
-dir_output = joinpath(@__DIR__, "../../output/")
+dir_output = joinpath(@__DIR__, "../../output-annualGrowth/")
 
 # define number of Monte Carlo runs
 if !@isdefined samplesize
@@ -55,10 +60,11 @@ df_sccMC = DataFrame(permafr=false, seaice=false, ge_string="-999", scen="-999",
                                   civvalue=-999., pulse=-999.,
                                   mean=-999., median=-999., min=-999., max=-999., perc25=-999.,
                                   perc75=-999., sd=-999., varcoeff=-999.,
-                                  perc05=-999., perc95=-999., perc10=-999., perc90=-999.)
+                                  perc05=-999., perc95=-999., perc10=-999., perc90=-999.,
+                                  share_zeroSCC = -999., count_NaN = -999)
 
 # get the SCC for three different growth effects distributions and scenarios
-for jj_scen in ["RCP4.5 & SSP2", "RCP2.6 & SSP1", "RCP8.5 & SSP5", "1.5 degC Target"]
+for jj_scen in scenarios
     for jj_gestring in ["EMPIRICAL"]
         for jj_permafr in [true]
             for jj_seaice in [true]
@@ -83,13 +89,7 @@ for jj_scen in ["RCP4.5 & SSP2", "RCP2.6 & SSP1", "RCP8.5 & SSP5", "1.5 degC Tar
                                                  " convergence", jj_convergence, "pulse_", jj_pulse))
 
                                     # define the output for the Monte Carlo files
-                                    dir_MCoutput = string(dir_output, "mc_diGE/ge", jj_gestring,
-                                                                    "_scen", jj_scen,
-                                                                    "_pf", jj_permafr,
-                                                                    "_se", jj_seaice,
-                                                                    "_co", jj_convergence, "_bd", jj_cbabs, "_eq", jj_eqwshare,
-                                                                    "_ci", jj_civvalue,
-                                                                    "_p", jj_pulse,
+                                    dir_MCoutput = string(dir_output, "mc_diGE/_scen", jj_scen,
                                                                      "/")
 
                                     # calculate the stochastic mean SCC
@@ -110,14 +110,13 @@ for jj_scen in ["RCP4.5 & SSP2", "RCP2.6 & SSP1", "RCP8.5 & SSP5", "1.5 degC Tar
                                                                         eqwbound=jj_eqwshare)
 
                                     # write out the full distribution
-                                    writedlm(string(dir_output, "SCC_MCS_scen", jj_scen, "_per", jj_permafr, "_sea", jj_seaice,
-                                                            "_ge", jj_gestring,
-                                                            "_conv", jj_convergence, "_bou", jj_cbabs, "_eqw", jj_eqwshare,
-                                                            "_civ", jj_civvalue,
-                                                            "_pul", jj_pulse,  ".csv"),
+                                    writedlm(string(dir_MCoutput, "SCC_MC.csv"),
                                                             scc_mcs_object, ",")
 
                                     println(scc_mcs_object)
+
+                                    # create a NaN-free version of the SCC distribution
+                                    scc_mcs_object = filter(!isnan, scc_mcs_object)
 
                                     # push the results into the data frame
                                     push!(df_sccMC, [jj_permafr, jj_seaice, jj_gestring,  jj_scen,
@@ -134,7 +133,9 @@ for jj_scen in ["RCP4.5 & SSP2", "RCP2.6 & SSP1", "RCP8.5 & SSP5", "1.5 degC Tar
                                                     StatsBase.percentile(scc_mcs_object[:, 1], 5),
                                                     StatsBase.percentile(scc_mcs_object[:, 1], 95),
                                                     StatsBase.percentile(scc_mcs_object[:, 1], 10),
-                                                    StatsBase.percentile(scc_mcs_object[:, 1], 90)])
+                                                    StatsBase.percentile(scc_mcs_object[:, 1], 90),
+                                                    count(scc_mcs_object .== 0.) / length(scc_mcs_object),
+                                                    samplesize - length(scc_mcs_object)])
 
                                     # clean out the scc_mcs_object
                                     global scc_mcs_object = nothing
@@ -153,7 +154,7 @@ for jj_scen in ["RCP4.5 & SSP2", "RCP2.6 & SSP1", "RCP8.5 & SSP5", "1.5 degC Tar
 end
 
 # remove the first placeholder row
-df_sccMC = df_sccMC[df_sccMC[:scen] .!= "-999", :]
+df_sccMC = df_sccMC[df_sccMC[!, :scen] .!= "-999", :]
 
 # export the results
 CSV.write(string(dir_output, "MimiPageGrowthEffectsResultsMonteCarlo.csv"), df_sccMC)
