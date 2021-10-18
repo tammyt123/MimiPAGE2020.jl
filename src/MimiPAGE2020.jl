@@ -4,13 +4,13 @@ using Mimi
 using Random
 using Distributions
 using DataFrames
-using MimiFAIR
+using MimiFAIRv1_6_2
 
 import Random
 
 export getpage
 
-
+include("fair16_implementation.jl")
 include("utils/load_parameters.jl")
 include("utils/mctools.jl")
 
