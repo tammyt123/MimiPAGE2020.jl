@@ -74,7 +74,8 @@ function get_pagefair_marginal_model(;ar6_scenario::String="ssp245", pulse_year:
     
     ## create PAGE2020 marginal model
     m = MimiPAGE2020.get_pagefair(ar6_scenario = ar6_scenario, prtp = prtp, eta = eta)
-    mm = Mimi.create_marginal_model(m, (pulse_size * 1e9)) # multiply by 1e9 since FAIR units are Gt
+    # mm = Mimi.create_marginal_model(m, (pulse_size * 1e9)) # multiply by 1e9 since FAIR units are Gt
+    mm = Mimi.create_marginal_model(m, pulse_size)
     run(mm)
 
     ## get perturbed FAIR temperature vector
@@ -113,7 +114,15 @@ end
 #----------------------------------------------------------------------------------------------------------------------
 
 function compute_scghg_pagefair(;ar6_scenario::String="ssp245", pulse_year::Int, prtp::Float64, eta::Float64, pulse_size::Float64=1.0, gas::Symbol=:CO2)
+
     mm = MimiPAGE2020.get_pagefair_marginal_model(ar6_scenario = ar6_scenario, pulse_year = pulse_year, prtp = prtp, eta = eta, gas = gas, pulse_size = pulse_size)
-    scghg = mm[:EquityWeighting, :td_totaldiscountedimpacts] / MimiPAGE2020.undiscount_scc(mm.base, pulse_year) * 1e6 # for 1 Gt FAIR pulse, since SCC is in millions
+
+    if gas == :CO2
+        scghg = mm[:EquityWeighting, :td_totaldiscountedimpacts] / MimiPAGE2020.undiscount_scc(mm.base, pulse_year) / 1e3 * 12/44 
+    else
+        scghg = mm[:EquityWeighting, :td_totaldiscountedimpacts] / MimiPAGE2020.undiscount_scc(mm.base, pulse_year)
+    end
+
     return(scghg)
+
 end
