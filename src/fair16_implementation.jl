@@ -118,7 +118,7 @@ function compute_scghg_pagefair(;ar6_scenario::String="ssp245", pulse_year::Int,
     mm = MimiPAGE2020.get_pagefair_marginal_model(ar6_scenario = ar6_scenario, pulse_year = pulse_year, prtp = prtp, eta = eta, gas = gas, pulse_size = pulse_size)
 
     if gas == :CO2
-        scghg = mm[:EquityWeighting, :td_totaldiscountedimpacts] / MimiPAGE2020.undiscount_scc(mm.base, pulse_year) / 1e3 * 12/44 
+        scghg = mm[:EquityWeighting, :td_totaldiscountedimpacts] / MimiPAGE2020.undiscount_scc(mm.base, pulse_year) / 1e3 * 12/44 # fair1.6 pulse is 1GtC, scc is in millions. need to convert to CO2 and divide by 1e3
     else
         scghg = mm[:EquityWeighting, :td_totaldiscountedimpacts] / MimiPAGE2020.undiscount_scc(mm.base, pulse_year)
     end
