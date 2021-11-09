@@ -3,9 +3,9 @@ name: Run the Julia Package Butler
 on:
   push:
     branches:
-      - master
+      # - master
   schedule:
-    - cron: '0 */1 * * *'
+    # - cron: '0 */1 * * *'
 
 jobs:
   butler:
